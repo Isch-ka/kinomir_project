@@ -11,6 +11,7 @@ class Post(models.Model):
         on_delete=models.CASCADE,
         related_name='posts'
     )
+
     group = models.ForeignKey(
         'Group',
         on_delete=models.CASCADE,
@@ -18,6 +19,10 @@ class Post(models.Model):
         null=True,   # Может быть NULL в базе данных
         related_name='posts'  # Позволит из группы получать все посты группы
     )
+
+    def __str__(self):
+        # выводим текст поста
+        return self.text
 
 class Group(models.Model):
     title = models.CharField(max_length=200)  # Название группы
