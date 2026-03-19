@@ -1,31 +1,44 @@
 from django.shortcuts import render, get_object_or_404
+from django.core.paginator import Paginator  # Новый импорт
 from .models import Post, Group
 
+
 def index(request):
-    """Главная страница Yatube"""
-    # Одна строка вместо тысячи слов на SQL:
-    # в переменную posts будет сохранена выборка из 10 объектов модели Post,
-    # отсортированных по полю pub_date по убыванию (от больших значений к меньшим)
-    posts = Post.objects.order_by('-pub_date')[:10]
-    # В словаре context отправляем информацию в шаблон
+    """Главная страница Yatube с пагинацией"""
+    # Получаем все посты, отсортированные по дате
+    post_list = Post.objects.order_by('-pub_date')
+    
+    # Создаем пагинатор: 10 постов на страницу
+    paginator = Paginator(post_list, 10)
+    
+    # Получаем номер страницы из GET-параметра
+    page_number = request.GET.get('page')
+    
+    # Получаем объекты нужной страницы
+    page_obj = paginator.get_page(page_number)
+    
     context = {
-        'posts': posts,
+        'page_obj': page_obj,  # Передаем в шаблон объект страницы
+        'total_posts': Post.objects.count(),  # Добавляем общее количество
     }
     return render(request, 'posts/index.html', context)
 
+
 def group_posts(request, slug):
-    """Страница с постами, отфильтрованными по группам"""
-    # Функция get_object_or_404 получает по заданным критериям объект
-    # из базы данных или возвращает сообщение об ошибке, если объект не найден.
-    # В нашем случае в переменную group будут переданы объекты модели Group,
-    # поле slug у которых соответствует значению slug в запросе
+    """Страница с постами группы с пагинацией"""
     group = get_object_or_404(Group, slug=slug)
-    # Метод .filter позволяет ограничить поиск по критериям.
-    # Это аналог добавления
-    # условия WHERE group_id = {group_id}
-    posts = Post.objects.filter(group=group).order_by('-pub_date')[:10]
+    
+    # Получаем посты группы
+    post_list = group.posts.order_by('-pub_date')
+    
+    # Пагинация: 10 постов на страницу
+    paginator = Paginator(post_list, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     context = {
         'group': group,
-        'posts': posts,
+        'page_obj': page_obj,
+        'total_posts': Post.objects.count(),  # Добавляем общее количество
     }
     return render(request, 'posts/group_list.html', context)
