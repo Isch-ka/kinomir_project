@@ -866,7 +866,7 @@ def group_posts(request, slug):
 
 ---
 
-## Заключение
+## Заключение основного этапа работы
 
 В результате выполнения всех этапов мы создали полноценную социальную сеть Yatube со следующими возможностями:
 
@@ -880,3 +880,240 @@ def group_posts(request, slug):
 - **Динамические URL** с использованием `slug` — человеко-понятные адреса типа `/group/cats/`
 
 - **Безопасность** — защита от несуществующих страниц через `get_object_or_404()`
+
+## 7. Доработка проекта: улучшения и новая функциональность
+
+После создания основной структуры проекта Yatube мы провели ряд доработок, которые значительно улучшили функциональность и пользовательский опыт.
+
+### 7.1. Удаление тестового приложения
+
+На начальном этапе в проекте присутствовало тестовое приложение `ice_cream`. Оно было удалено для очистки проекта:
+
+- Удалена директория `yatube/ice_cream/`
+- Удалена запись `'ice_cream.apps.IceCreamConfig'` из `INSTALLED_APPS` в `settings.py`
+- Проведена проверка отсутствия других упоминаний приложения
+
+### 7.2. Добавление пагинации (постраничной навигации)
+
+Для удобства просмотра большого количества постов была добавлена пагинация:
+
+**Что такое пагинация?**  
+Пагинация (pagination) — это механизм разбиения длинного списка записей на отдельные страницы. Вместо того чтобы загружать сразу все посты (что может быть медленно и неудобно), мы показываем только 10 постов на одной странице.
+
+#### Реализация в views.py:
+
+```python
+from django.core.paginator import Paginator  # Импортируем встроенный класс пагинации
+
+def index(request):
+    """Главная страница Yatube с пагинацией"""
+    # Получаем все посты, отсортированные по дате
+    post_list = Post.objects.order_by('-pub_date')
+    
+    # Создаем пагинатор: 10 постов на страницу
+    paginator = Paginator(post_list, 10)
+    
+    # Получаем номер страницы из GET-параметра (например, ?page=2)
+    page_number = request.GET.get('page')
+    
+    # Получаем объекты нужной страницы
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,  # Передаем в шаблон объект страницы
+    }
+    return render(request, 'posts/index.html', context)
+```
+
+**Как это работает:**
+1. `Paginator(post_list, 10)` — создаёт объект пагинатора, который разбивает все посты на страницы по 10 штук
+2. `request.GET.get('page')` — извлекает из URL параметр `page` (например, `/posts/?page=2`)
+3. `paginator.get_page(page_number)` — возвращает объект `Page` с постами для запрошенной страницы
+4. Если номер страницы не указан, автоматически показывается первая страница
+5. Если указан несуществующий номер, показывается последняя страница
+
+#### Шаблон пагинатора (includes/paginator.html):
+
+Мы создали отдельный файл для пагинации, который можно подключать на любую страницу:
+
+```html
+{% if page_obj.has_other_pages %}  <!-- Проверяем, есть ли другие страницы -->
+<nav aria-label="Page navigation" class="my-4">
+  <ul class="pagination justify-content-center">
+    {% if page_obj.has_previous %}
+      <!-- Кнопка "Первая" -->
+      <li class="page-item">
+        <a class="page-link" href="?page=1">Первая</a>
+      </li>
+      <!-- Кнопка "Предыдущая" -->
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+          &laquo;
+        </a>
+      </li>
+    {% endif %}
+    
+    <!-- Номера страниц (показываем только ближайшие) -->
+    {% for i in page_obj.paginator.page_range %}
+      {% if page_obj.number == i %}
+        <!-- Текущая страница - активная -->
+        <li class="page-item active">
+          <span class="page-link">{{ i }}</span>
+        </li>
+      {% elif i > page_obj.number|add:-3 and i < page_obj.number|add:3 %}
+        <!-- Страницы рядом с текущей -->
+        <li class="page-item">
+          <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+        </li>
+      {% endif %}
+    {% endfor %}
+    
+    {% if page_obj.has_next %}
+      <!-- Кнопка "Следующая" -->
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+          &raquo;
+        </a>
+      </li>
+      <!-- Кнопка "Последняя" -->
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+          Последняя
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+```
+
+**Что здесь важно:**
+- `page_obj.has_other_pages` — проверяет, есть ли другие страницы (если нет, пагинатор не показывается)
+- `page_obj.has_previous` / `page_obj.has_next` — проверяют наличие предыдущей/следующей страницы
+- `page_obj.paginator.page_range` — диапазон всех номеров страниц
+- `page_obj.number` — номер текущей страницы
+- `page_obj.previous_page_number` / `page_obj.next_page_number` — номера соседних страниц
+- `page_obj.paginator.num_pages` — общее количество страниц
+
+### 7.3. Улучшение интерфейса и добавление кастомных стилей
+
+#### Счётчик постов в хедере
+
+Мы добавили информативный счётчик постов, который меняется в зависимости от того, где находится пользователь:
+
+**В views.py добавили в контекст:**
+```python
+# На главной странице
+context = {
+    'page_obj': page_obj,
+    'total_posts': Post.objects.count(),  # Общее количество постов
+}
+
+# В группе
+context = {
+    'group': group,
+    'page_obj': page_obj,
+    'total_posts': post_list.count(),  # Количество постов только в этой группе
+}
+```
+
+**В header.html реализовали условный вывод:**
+```html
+<div class="navbar-text">
+  {% if group %}
+    <span class="badge bg-primary me-2">Группа: {{ group.title }}</span>
+    <span class="badge bg-secondary">Постов: {{ total_posts }}</span>
+  {% else %}
+    <span class="badge bg-info me-2">Главная страница</span>
+    <span class="badge bg-secondary">Всего постов: {{ total_posts }}</span>
+  {% endif %}
+</div>
+```
+
+#### Кастомные CSS-стили
+
+Создали файл `static/css/custom.css` для дополнительного оформления:
+
+```css
+/* Стили для карточек постов */
+article {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    transition: box-shadow 0.3s ease;
+}
+
+article:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Стили для пагинации */
+.page-link {
+    color: #007bff;
+}
+
+.page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+/* Стили для бейджей в хедере */
+.navbar-text .badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.7rem;
+    margin-left: 0.3rem;
+}
+```
+
+### 7.4. Исправление предупреждений и оптимизация
+
+#### Проблема с первичными ключами (W042)
+
+При переходе на Django 4.x появились предупреждения о типе первичных ключей. Решение: добавить в `settings.py`:
+
+```python
+# Указываем тип поля для автоматически создаваемых первичных ключей
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+```
+
+#### Неприменённые миграции
+
+При обновлении Django появились новые миграции для встроенных приложений. Решение:
+
+```bash
+python manage.py migrate
+```
+
+#### Обновление зависимостей
+
+Обновлён `requirements.txt` до актуальной версии:
+
+```
+Django==4.2.29
+pytz==2025.2
+sqlparse==0.5.5
+```
+
+### 7.5. Русификация интерфейса
+
+Для удобства пользователей изменён язык интерфейса на русский:
+
+```python
+LANGUAGE_CODE = 'ru-ru'
+```
+
+Это влияет на:
+- Форматы дат (месяцы отображаются по-русски)
+- Текст в админке Django
+- Сообщения об ошибках и системные уведомления
+
+## Итог улучшений
+
+После всех доработок проект Yatube приобрёл следующие улучшения:
+
+1. **Удобная навигация** - пагинация позволяет легко перемещаться между страницами с постами
+2. **Информативный интерфейс** - пользователь всегда видит, где находится и сколько постов доступно
+3. **Привлекательный дизайн** - кастомные стили улучшают внешний вид и пользовательский опыт
+4. **Чистота кода** - удалено тестовое приложение, исправлены предупреждения
+5. **Русскоязычный интерфейс** - более комфортно для русскоязычных пользователей

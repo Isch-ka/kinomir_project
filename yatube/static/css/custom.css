@@ -23,3 +23,22 @@ article:hover {
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     transition: box-shadow 0.3s ease;
 }
+
+/* Стили для бейджей в хедере */
+.navbar-text .badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.7rem;
+    margin-left: 0.3rem;
+}
+
+.navbar-text .bg-primary {
+    background-color: #0056b3 !important;
+}
+
+.navbar-text .bg-info {
+    background-color: #17a2b8 !important;
+}
+
+.navbar-text .bg-secondary {
+    background-color: #6c757d !important;
+}
