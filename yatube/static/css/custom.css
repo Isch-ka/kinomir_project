@@ -42,3 +42,34 @@ article:hover {
 .navbar-text .bg-secondary {
     background-color: #6c757d !important;
 }
+
+/* Стили для подсветки поисковых запросов */
+.highlight {
+    background-color: #ffeb3b;
+    color: #000;
+    font-weight: bold;
+    padding: 0 2px;
+    border-radius: 3px;
+    transition: background-color 0.3s ease;
+}
+
+.highlight:hover {
+    background-color: #ffc107;
+}
+
+/* Улучшаем читаемость текста в карточках */
+.card-text {
+    line-height: 1.6;
+    font-size: 1.1rem;
+}
+
+/* Стиль для контекста поиска */
+.search-context {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 5px;
+    border-left: 4px solid #007bff;
+    font-family: 'Courier New', monospace;
+    white-space: pre-wrap;
+    word-break: break-word;
+}

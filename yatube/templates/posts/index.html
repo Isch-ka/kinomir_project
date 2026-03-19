@@ -1,31 +1,137 @@
 {% extends 'base.html' %}
+{% load post_extras %}
 
 {% block title %}
-  Последние обновления на сайте
+  {% if query %}
+    Поиск: {{ query }} - Yatube
+  {% else %}
+    Последние обновления на сайте
+  {% endif %}
 {% endblock %}
 
 {% block content %}
-  <h1>Последние обновления на сайте</h1>
-  
-  {% for post in page_obj %}
-    <article>
-      <ul>
-        <li>
-          Автор: {{ post.author.get_full_name }}
-        </li>
-        <li>
-          Дата публикации: {{ post.pub_date|date:"d E Y" }}
-        </li>
-      </ul>      
-      <p>{{ post.text }}</p>
+  <div class="row">
+    <div class="col-12">
+      <h1 class="mb-4">
+        {% if query %}
+          Результаты поиска по записям
+        {% else %}
+          Последние обновления на сайте
+        {% endif %}
+      </h1>
       
-      {# Проверяем, есть ли у поста группа #}
-      {% if post.group %}
-        <a href="{% url 'posts:group_list' post.group.slug %}">все записи группы</a>
+      <!-- Поисковая форма -->
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-search"></i> 
+            Поиск по тексту записей
+          </h5>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-3">
+            Введите слово или фразу для поиска в тексте всех записей на сайте.
+            Найденные слова будут <span class="highlight">подсвечены</span>.
+          </p>
+          
+          <form method="get" action="{% url 'posts:index' %}" class="row g-3">
+            <div class="col-md-10">
+              <div class="input-group input-group-lg">
+                <span class="input-group-text bg-white">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input type="text" 
+                       name="q" 
+                       class="form-control" 
+                       placeholder="Например: утро, путешествие, Лев Толстой..." 
+                       value="{{ query }}">
+              </div>
+            </div>
+            <div class="col-md-2">
+              <button type="submit" class="btn btn-primary btn-lg w-100">
+                Найти
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Результаты поиска -->
+      {% if query %}
+        <div class="alert alert-info d-flex align-items-center" role="alert">
+          <i class="bi bi-info-circle-fill me-2"></i>
+          <div>
+            Найдено записей, содержащих <strong>"{{ query }}"</strong>: 
+            <span class="badge bg-primary rounded-pill">{{ page_obj.paginator.count }}</span>
+          </div>
+        </div>
+        
+        {% if page_obj.paginator.count == 0 %}
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            По вашему запросу ничего не найдено. Попробуйте изменить поисковый запрос.
+          </div>
+        {% endif %}
       {% endif %}
-    </article>
-    {% if not forloop.last %}<hr>{% endif %}
-  {% endfor %}
-  
-  {% include 'includes/paginator.html' %}
+      
+      <!-- Список постов -->
+      {% for post in page_obj %}
+        <article class="card mb-3">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <h5 class="card-title">
+                <i class="bi bi-person-circle me-1"></i>
+                {{ post.author.get_full_name|default:post.author.username }}
+              </h5>
+              <small class="text-muted">
+                <i class="bi bi-calendar3 me-1"></i>
+                {{ post.pub_date|date:"d E Y H:i" }}
+              </small>
+            </div>
+            
+            <!-- Текст поста с подсветкой -->
+            <div class="card-text mt-2">
+              {% if query %}
+                {{ post.text|highlight:query }}
+              {% else %}
+                {{ post.text }}
+              {% endif %}
+            </div>
+            
+            {% if post.group %}
+              <div class="mt-2">
+                <a href="{% url 'posts:group_list' post.group.slug %}" class="text-decoration-none">
+                  <span class="badge bg-secondary">
+                    <i class="bi bi-people-fill me-1"></i>
+                    {{ post.group.title }}
+                  </span>
+                </a>
+              </div>
+            {% endif %}
+          </div>
+        </article>
+      {% empty %}
+        {% if not query %}
+          <div class="alert alert-warning">
+            <i class="bi bi-inbox-fill me-2"></i>
+            Пока нет ни одного поста. 
+            <a href="/admin/" class="alert-link">Добавьте первый пост в админке</a>.
+          </div>
+        {% endif %}
+      {% endfor %}
+      
+      <!-- Пагинация -->
+      {% include 'includes/paginator.html' %}
+      
+      <!-- Ссылка для сброса поиска -->
+      {% if query %}
+        <div class="text-center mt-4">
+          <a href="{% url 'posts:index' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>
+            Показать все записи
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}

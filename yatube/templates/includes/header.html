@@ -5,14 +5,17 @@
       <img src="{% static 'img/logo.png' %}" width="30" height="30" class="d-inline-block align-top" alt="">
       <span style="color:red">Ya</span>tube
     </a>
-    <div class="navbar-text">
-      {% if group %}
-        <span class="badge bg-primary me-2">Группа: {{ group.title }}</span>
-        <span class="badge bg-secondary">Постов: {{ total_posts }}</span>
-      {% else %}
-        <span class="badge bg-info me-2">Главная страница</span>
-        <span class="badge bg-secondary">Всего постов: {{ total_posts }}</span>
-      {% endif %}
+    
+    <div class="d-flex align-items-center">
+      <span class="navbar-text">
+        {% if group %}
+          <span class="badge bg-primary me-2">Группа: {{ group.title }}</span>
+          <span class="badge bg-secondary">Постов: {{ total_posts }}</span>
+        {% else %}
+          <span class="badge bg-info me-2">Главная страница</span>
+          <span class="badge bg-secondary">Всего постов: {{ total_posts }}</span>
+        {% endif %}
+      </span>
     </div>
   </div>
 </nav>
