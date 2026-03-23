@@ -7,7 +7,23 @@
     </a>
     
     <div class="d-flex align-items-center">
-      <span class="navbar-text">
+      {% if user.is_authenticated %}
+        <span class="navbar-text me-3">
+          <span class="badge bg-success">Пользователь: {{ user.username }}</span>
+        </span>
+        <a href="{% url 'users:logout' %}" class="btn btn-outline-danger btn-sm me-2">
+          Выйти
+        </a>
+      {% else %}
+        <a href="{% url 'users:login' %}" class="btn btn-outline-primary btn-sm me-2">
+          Войти
+        </a>
+        <a href="{% url 'users:signup' %}" class="btn btn-primary btn-sm">
+          Регистрация
+        </a>
+      {% endif %}
+      
+      <span class="navbar-text ms-3">
         {% if group %}
           <span class="badge bg-primary me-2">Группа: {{ group.title }}</span>
           <span class="badge bg-secondary">Постов: {{ total_posts }}</span>

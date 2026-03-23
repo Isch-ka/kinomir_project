@@ -17,7 +17,10 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
-    # импорт правил из приложения posts
-    path('', include('posts.urls', namespace='posts')),  # Добавлен namespace
     path('admin/', admin.site.urls),
+    # Сначала проверяем в users, потом в auth
+    path('auth/', include('users.urls')),
+    path('auth/', include('django.contrib.auth.urls')),
+    # импорт правил из приложения posts
+    path('', include('posts.urls', namespace='posts')), # Добавлен namespace
 ]

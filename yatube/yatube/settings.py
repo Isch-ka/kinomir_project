@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'posts.apps.PostsConfig',
+    'users.apps.UsersConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -125,3 +126,12 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 # Настройка первичных ключей по умолчанию
 # Используем AutoField для совместимости с существующей БД
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+# Настройки аутентификации
+LOGIN_URL = 'users:login'
+LOGIN_REDIRECT_URL = 'posts:index'
+LOGOUT_REDIRECT_URL = 'posts:index'
+
+# Настройка почты для восстановления пароля (сохранение в файлы)
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
