@@ -6,4 +6,6 @@ app_name = 'posts'  # Добавляем namespace для приложения
 urlpatterns = [
     path('', views.index, name='index'),  # Добавляем name
     path('group/<slug:slug>/', views.group_posts, name='group_list'),  # Добавляем name
+    path('groups/', views.groups_list, name='groups_list'),
+    path('groups/search/', views.group_search, name='group_search'),
 ]

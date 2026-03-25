@@ -7,9 +7,28 @@
     </a>
     
     <div class="d-flex align-items-center">
+      <!-- Поиск по группам -->
+      <form method="get" action="{% url 'posts:group_search' %}" class="d-flex me-3">
+        <input type="text" 
+               name="q" 
+               class="form-control form-control-sm me-2" 
+               placeholder="Поиск групп..." 
+               value="{{ search_query }}"
+               style="width: 180px;">
+        <button type="submit" class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-search"></i>
+        </button>
+      </form>
+      
+      <!-- Кнопка "Все группы" для быстрого просмотра -->
+      <a href="{% url 'posts:groups_list' %}" class="btn btn-outline-info btn-sm me-3">
+        <i class="bi bi-people-fill"></i> Все группы
+      </a>
+      
+      <!-- Авторизация -->
       {% if user.is_authenticated %}
         <span class="navbar-text me-3">
-          <span class="badge bg-success">Пользователь: {{ user.username }}</span>
+          <span class="badge bg-success">{{ user.username }}</span>
         </span>
         <a href="{% url 'users:logout' %}" class="btn btn-outline-danger btn-sm me-2">
           Выйти
@@ -23,6 +42,7 @@
         </a>
       {% endif %}
       
+      <!-- Счётчик постов -->
       <span class="navbar-text ms-3">
         {% if group %}
           <span class="badge bg-primary me-2">Группа: {{ group.title }}</span>

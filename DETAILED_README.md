@@ -1318,3 +1318,119 @@ EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 - В хедере отображается имя авторизованного пользователя
 - Настроены перенаправления после входа/выхода
 - Подготовлена основа для восстановления пароля (письма сохраняются в папку sent_emails)
+
+## 11. Улучшение навигации: поиск по группам и страница всех сообществ
+
+### 11.1. Что сделано
+- Добавлена кнопка "На главную" на странице каждой группы
+- Реализован поиск по группам в хедере сайта
+- Создана страница со списком всех групп
+- Добавлена возможность поиска групп по названию и описанию
+
+### 11.2. Код и объяснения
+
+**Кнопка возврата на главную (group_list.html):**
+```html
+<div class="mb-4">
+  <a href="{% url 'posts:index' %}" class="btn btn-outline-primary">
+    <i class="bi bi-arrow-left"></i> На главную
+  </a>
+</div>
+```
+
+**Поиск групп в хедере (header.html):**
+```html
+<form method="get" action="{% url 'posts:group_search' %}" class="d-flex me-3">
+  <input type="text" name="q" class="form-control form-control-sm me-2" 
+         placeholder="Поиск групп..." value="{{ search_query }}">
+  <button type="submit" class="btn btn-outline-primary btn-sm">
+    <i class="bi bi-search"></i>
+  </button>
+</form>
+<a href="{% url 'posts:groups_list' %}" class="btn btn-outline-info btn-sm me-3">
+  <i class="bi bi-people-fill"></i> Все группы
+</a>
+```
+
+**Для чего это нужно:**  
+- Поле поиска позволяет быстро найти нужное сообщество по названию или описанию
+- Кнопка "Все группы" даёт быстрый доступ к полному списку сообществ
+
+**View-функция для списка групп (views.py):**
+```python
+def groups_list(request):
+    """Страница со списком всех групп"""
+    groups = Group.objects.all().order_by('title')
+    
+    # Добавляем количество постов для каждой группы
+    for group in groups:
+        group.posts_count = group.posts.count()
+    
+    paginator = Paginator(groups, 12)  # 12 групп на страницу
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'total_groups': Group.objects.count(),
+        'total_posts': Post.objects.count(),
+    }
+    return render(request, 'posts/groups_list.html', context)
+```
+
+**Для чего это нужно:**  
+- Показывает все существующие группы в виде карточек
+- Для каждой группы отображается количество постов
+- Пагинация позволяет удобно просматривать большое количество групп
+
+**View-функция для поиска групп (views.py):**
+```python
+def group_search(request):
+    """Поиск групп по названию или описанию"""
+    query = request.GET.get('q', '')
+    groups = Group.objects.all()
+    
+    if query:
+        groups = groups.filter(
+            Q(title__icontains=query) | Q(description__icontains=query)
+        ).order_by('title')
+    
+    for group in groups:
+        group.posts_count = group.posts.count()
+    
+    paginator = Paginator(groups, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'total_groups': groups.count(),
+        'query': query,
+    }
+    return render(request, 'posts/groups_list.html', context)
+```
+
+**Для чего это нужно:**  
+- Ищет группы по частичному совпадению в названии или описании
+- Использует `Q` для объединения условий через OR
+- `icontains` обеспечивает поиск без учёта регистра
+
+**Шаблон groups_list.html:**
+- Отображает группы в виде карточек (3 колонки на больших экранах)
+- Показывает название, описание и количество постов в каждой группе
+- Содержит кнопку перехода в выбранную группу
+- Поддерживает пагинацию и сохранение поискового запроса
+
+**URL-маршруты (posts/urls.py):**
+```python
+urlpatterns = [
+    path('groups/', views.groups_list, name='groups_list'),
+    path('groups/search/', views.group_search, name='group_search'),
+]
+```
+
+### 11.3. Результат
+- Улучшена навигация между разделами сайта
+- Пользователи могут быстро находить интересующие их сообщества
+- Страница "Все группы" даёт общее представление о доступных сообществах
+- Поиск групп работает по названию и описанию без учёта регистра
