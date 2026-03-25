@@ -27,6 +27,9 @@ Yatube - это платформа для публикации личных дн
 3. **Установить зависимости**
    ```bash
    pip install -r requirements.txt
+
+   # Установка зависимостей с зеркала:
+   pip install -r requirements.txt -i https://mirrors.cloud.tencent.com/pypi/simple --trusted-host mirrors.cloud.tencent.com --timeout 100
    ```
 
 4. **Выполнить миграции**
