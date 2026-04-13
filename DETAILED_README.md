@@ -1808,3 +1808,108 @@ def post_edit(request, post_id):
 - После создания поста — редирект на профайл, а не на главную
 
 **Результат:** Все тестовые сценарии пройдены, форма корректно валидирует данные, навигация стала удобнее.
+
+## 15. Тестирование проекта Yatube
+
+### 15.1. Что сделано
+- Написаны тесты для моделей Post и Group
+- Написаны тесты для формы PostForm (включая валидацию)
+- Написаны тесты для view-функций
+- Все тесты объединены в структурированный пакет `tests/`
+- Успешно пройдено 18 тестов
+
+### 15.2. Структура тестов
+
+```
+posts/
+├── tests/
+│   ├── __init__.py
+│   ├── test_models.py    # Тесты моделей
+│   ├── test_forms.py     # Тесты форм
+│   └── test_views.py     # Тесты view-функций
+└── utils.py              # Вспомогательные функции
+```
+
+### 15.3. Тесты моделей (test_models.py)
+
+```python
+class PostModelTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser')
+        self.post = Post.objects.create(
+            text='Тестовый пост',
+            author=self.user
+        )
+    
+    def test_post_creation(self):
+        self.assertEqual(self.post.text, 'Тестовый пост')
+```
+
+**Для чего нужно:** Проверяет, что модели корректно создаются и сохраняются в БД.
+
+### 15.4. Тесты форм (test_forms.py)
+
+```python
+class PostFormTest(TestCase):
+    def test_empty_text_invalid(self):
+        form = PostForm(data={'text': ''})
+        self.assertFalse(form.is_valid())
+    
+    def test_whitespace_text_invalid(self):
+        form = PostForm(data={'text': '   '})
+        self.assertFalse(form.is_valid())
+```
+
+**Для чего нужно:** Проверяет валидацию формы — пустой текст и текст из пробелов не должны проходить.
+
+### 15.5. Тесты view-функций (test_views.py)
+
+```python
+class PostViewsTest(TestCase):
+    def test_create_post_redirects_unautorized(self):
+        response = self.client.get(reverse('posts:post_create'))
+        self.assertRedirects(response, '/auth/login/?next=/create/')
+    
+    def test_profile_page_accessible(self):
+        response = self.client.get(
+            reverse('posts:profile', args=['testuser'])
+        )
+        self.assertEqual(response.status_code, 200)
+```
+
+**Для чего нужно:** Проверяет доступность страниц и перенаправления неавторизованных пользователей.
+
+### 15.6. Запуск тестов
+
+```bash
+# Запуск всех тестов
+python manage.py test
+
+# Тесты конкретного приложения
+python manage.py test posts
+
+# Конкретный файл с тестами
+python manage.py test posts.tests.test_models
+
+# Подробный вывод
+python manage.py test -v 2
+```
+
+### 15.7. Результат тестирования
+
+```
+Ran 18 tests in 0.107s
+OK
+```
+
+Все 18 тестов успешно пройдены:
+- 5 тестов моделей
+- 5 тестов форм
+- 8 тестов view-функций
+
+### 15.8. Итог
+- ✅ Проект покрыт тестами
+- ✅ Форма PostForm корректно валидирует данные
+- ✅ View-функции правильно обрабатывают запросы
+- ✅ Неавторизованные пользователи перенаправляются на страницу входа
+- ✅ Все страницы доступны по правильным URL
