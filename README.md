@@ -62,6 +62,22 @@ Yatube - это платформа для публикации личных дн
 | `python manage.py createsuperuser` | Создание админа |
 | `python manage.py startapp <имя>` | Создание нового приложения |
 
+## Запуск тестов
+
+```bash
+# Запуск всех тестов
+python manage.py test
+
+# Тесты конкретного приложения
+python manage.py test posts
+
+# Конкретный файл с тестами
+python manage.py test posts.tests.test_models
+
+# Подробный вывод
+python manage.py test -v 2
+```
+
 ## Структура проекта
 
 ```
