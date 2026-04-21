@@ -156,11 +156,16 @@ def year(request):
 # Запуск всех тестов
 python manage.py test
 
-# Тесты приложения reviews
+# Запуск тестов приложения reviews
 python manage.py test reviews
 
-# Подробный вывод
+# Запуск с подробным выводом
 python manage.py test -v 2
+
+# Запуск конкретного тестового файла
+python manage.py test reviews.tests.test_models
+python manage.py test reviews.tests.test_forms
+python manage.py test reviews.tests.test_views
 ```
 
 ## Лицензия
