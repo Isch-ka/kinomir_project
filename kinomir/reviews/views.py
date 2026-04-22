@@ -113,21 +113,18 @@ def genre_search(request):
 
 @login_required
 def review_create(request):
-    """Страница создания новой рецензии (доступна только авторизованным)"""
+    """Страница создания новой рецензии"""
     form = ReviewForm(request.POST or None)
     
     if request.method == 'POST' and form.is_valid():
         review = form.save(commit=False)
         review.author = request.user
-        # Если пользователь не админ - рецензия требует одобрения
-        review.is_approved = request.user.is_staff
+        review.is_approved = request.user.is_staff  # True для админа, False для обычных
         review.save()
+        print(f"✅ Рецензия создана: {review.movie_title}, is_approved={review.is_approved}")
         return redirect('reviews:profile', username=request.user.username)
     
-    context = {
-        'form': form,
-        'is_edit': False,
-    }
+    context = {'form': form, 'is_edit': False}
     return render(request, 'reviews/review_form.html', context)
 
 
@@ -165,7 +162,13 @@ def review_moderate(request, review_id):
 def profile(request, username):
     """Профайл пользователя"""
     author = get_object_or_404(User, username=username)
-    review_list = author.reviews.filter(is_approved=True).select_related('genre').order_by('-pub_date')
+    
+    # Если смотрим свой профайл — показываем все рецензии
+    # Если чужой — только одобренные
+    if request.user == author:
+        review_list = author.reviews.select_related('genre').order_by('-pub_date')
+    else:
+        review_list = author.reviews.filter(is_approved=True).select_related('genre').order_by('-pub_date')
     
     paginator = Paginator(review_list, 10)
     page_number = request.GET.get('page')
