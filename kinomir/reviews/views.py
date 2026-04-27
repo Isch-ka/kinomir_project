@@ -1,10 +1,11 @@
+from django.db.models import Q, Value
+from django.db.models.functions import Lower
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from .forms import ReviewForm
 from django.core.paginator import Paginator
-from django.db.models import Q
 from django.contrib.auth import get_user_model
 from .models import Review, Genre
 
@@ -12,25 +13,27 @@ User = get_user_model()
 
 
 def index(request):
-    """Главная страница КиноМир с поиском по рецензиям"""
-    # Базовый запрос - только одобренные рецензии
-    review_list = Review.objects.filter(is_approved=True).order_by('-pub_date')
-
-    # Получаем поисковый запрос из GET-параметров
     query = request.GET.get('q', '')
+    all_reviews = Review.objects.filter(is_approved=True).order_by('-pub_date')
     
-    # Если есть поисковый запрос, фильтруем рецензии
     if query:
-        review_list = review_list.filter(
-            Q(movie_title__icontains=query) | 
-            Q(director__icontains=query) |
-            Q(text__icontains=query)
-        )
+        query_lower = query.lower()
+        filtered_reviews = []
+        for review in all_reviews:
+            if (query_lower in review.movie_title.lower() or
+                query_lower in review.director.lower() or
+                query_lower in review.text.lower() or
+                query_lower in review.author.username.lower() or
+                query_lower in review.author.first_name.lower() or
+                query_lower in review.author.last_name.lower()):
+                filtered_reviews.append(review.id)
+        
+        review_list = Review.objects.filter(id__in=filtered_reviews, is_approved=True)
+    else:
+        review_list = all_reviews
     
-    # Применяем select_related для оптимизации запросов
     review_list = review_list.select_related('author', 'genre')
     
-    # Пагинация
     paginator = Paginator(review_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -65,20 +68,31 @@ def genre_reviews(request, slug):
 
 
 def genres_list(request):
-    """Страница со списком всех жанров"""
-    genres = Genre.objects.all().order_by('name')
+    query = request.GET.get('q', '')
+    all_genres = Genre.objects.all().order_by('name')
     
-    # Добавляем количество рецензий для каждого жанра
+    if query:
+        query_lower = query.lower()
+        filtered_genres = []
+        for genre in all_genres:
+            if (query_lower in genre.name.lower() or
+                query_lower in genre.description.lower()):
+                filtered_genres.append(genre.id)
+        genres = Genre.objects.filter(id__in=filtered_genres).order_by('name')
+    else:
+        genres = all_genres
+    
     for genre in genres:
         genre.reviews_count = genre.reviews.filter(is_approved=True).count()
     
-    paginator = Paginator(genres, 12)  # 12 жанров на страницу
+    paginator = Paginator(genres, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
     context = {
         'page_obj': page_obj,
-        'total_genres': Genre.objects.count(),
+        'query': query,
+        'total_genres': genres.count(),
         'total_reviews': Review.objects.filter(is_approved=True).count(),
     }
     return render(request, 'reviews/genres_list.html', context)
@@ -195,16 +209,20 @@ def review_detail(request, review_id):
 
 
 def profile_search(request):
-    """Поиск пользователей по имени или username"""
     query = request.GET.get('q', '')
-    users = User.objects.all()
+    all_users = User.objects.all().order_by('username')
     
     if query:
-        users = users.filter(
-            Q(username__icontains=query) | 
-            Q(first_name__icontains=query) | 
-            Q(last_name__icontains=query)
-        ).order_by('username')
+        query_lower = query.lower()
+        filtered_users = []
+        for user in all_users:
+            if (query_lower in user.username.lower() or
+                query_lower in user.first_name.lower() or
+                query_lower in user.last_name.lower()):
+                filtered_users.append(user.id)
+        users = User.objects.filter(id__in=filtered_users).order_by('username')
+    else:
+        users = all_users
     
     paginator = Paginator(users, 12)
     page_number = request.GET.get('page')
