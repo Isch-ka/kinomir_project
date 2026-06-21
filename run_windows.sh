@@ -6,6 +6,7 @@ if [ ! -d "venv" ]; then
     python -m venv venv
 fi
 
+echo "Активация виртуального окружения..."
 source venv/Scripts/activate
 
 echo "Установка зависимостей..."

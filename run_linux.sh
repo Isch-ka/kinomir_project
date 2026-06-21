@@ -6,6 +6,7 @@ if [ ! -d "venv" ]; then
     python3 -m venv venv
 fi
 
+echo "Активация виртуального окружения..."
 source venv/bin/activate
 
 echo "Установка зависимостей..."
@@ -20,7 +21,7 @@ python manage.py makemigrations
 echo "Применение миграций..."
 python manage.py migrate
 
-echo "Загрузка тестовых данных..."
+echo "Загрузка данных..."
 python manage.py loaddata fixtures/kinomir_data.json
 
 echo "Создание суперпользователя..."
