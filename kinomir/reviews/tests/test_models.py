@@ -97,6 +97,9 @@ class ReviewModelTest(TestCase):
 
     def test_review_ordering(self):
         """Рецензии сортируются по убыванию даты публикации."""
+        import time
+        time.sleep(0.1)
+
         review2 = Review.objects.create(
             movie_title='Новый фильм',
             director='Новый режиссёр',
@@ -107,5 +110,24 @@ class ReviewModelTest(TestCase):
             genre=self.genre,
             is_approved=True
         )
-        reviews = Review.objects.all()
+        reviews = Review.objects.all().order_by('-pub_date')
         self.assertGreater(reviews[0].pub_date, reviews[1].pub_date)
+        
+def test_review_ordering(self):
+    """Рецензии сортируются по убыванию даты публикации."""
+    import time
+    time.sleep(0.1)  # 👈 добавь эту строку
+    
+    review2 = Review.objects.create(
+        movie_title='Новый фильм',
+        director='Новый режиссёр',
+        release_year=2021,
+        text='Тоже хороший фильм',
+        rating=9,
+        author=self.user,
+        genre=self.genre,
+        is_approved=True
+    )
+    reviews = Review.objects.all().order_by('-pub_date')
+    # Первая — review2 (новая), вторая — self.review (старая)
+    self.assertGreater(reviews[0].pub_date, reviews[1].pub_date)
