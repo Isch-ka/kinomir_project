@@ -32,3 +32,5 @@ python manage.py test
 
 echo "Запуск сервера..."
 python manage.py runserver
+
+exec bash
