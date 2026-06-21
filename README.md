@@ -17,9 +17,9 @@ cd kinomir_project/
 
 # 2. Запустить скрипт развёртывания
 # Windows (Git Bash):
-./run_windows.sh
+source ./run_windows.sh
 # Linux/Mac:
-./run_linux.sh
+source ./run_linux.sh
 
 # Скрипт сам создаст окружение, установит зависимости, выполнит миграции и загрузит тестовые данные.
 
