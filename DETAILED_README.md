@@ -33,6 +33,7 @@ cd kinomir_project/
 # Windows (Git Bash):
 ./run_windows.sh
 # Linux/Mac:
+chmod +x run_linux.sh
 ./run_linux.sh
 
 # Скрипт сам создаст окружение, установит зависимости, выполнит миграции и загрузит тестовые данные.
@@ -40,10 +41,6 @@ cd kinomir_project/
 # 3. Запустить сервер
 python manage.py runserver
 ```
-
-Важно! Чтобы сделать файл sh исполняемым:
-
-```chmod +x run_linux.sh``` / ```chmod +x run_windows.sh```
 
 ## Ручной старт
 
