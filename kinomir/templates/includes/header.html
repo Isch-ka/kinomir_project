@@ -6,11 +6,25 @@
                 <i class="bi bi-camera-reels-fill fs-3 me-2" style="color: #e50914;"></i>
                 <span style="color: #e50914;">КиноМир</span>
             </a>
+            
             {% if request.resolver_match.view_name != 'reviews:index' %}
                 <a href="{% url 'reviews:index' %}" class="btn btn-outline-light btn-sm ms-2">
                     <i class="bi bi-house-door"></i> На главную
                 </a>
             {% endif %}
+
+            {% with request.resolver_match.view_name as view_name %}
+            <ul class="nav nav-pills ms-3">
+                <li class="nav-item">
+                    <a class="nav-link text-white {% if view_name == 'about:author' %}active{% endif %}" 
+                       href="{% url 'about:author' %}">КиноАвтор</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white {% if view_name == 'about:tech' %}active{% endif %}" 
+                       href="{% url 'about:tech' %}">КиноТех</a>
+                </li>
+            </ul>
+            {% endwith %}
         </div>
 
         <div class="d-flex align-items-center">
@@ -24,7 +38,7 @@
 
             <div class="vr mx-2 bg-secondary"></div>
 
-            <a href="{% url 'reviews:profile_search' %}" class="btn btn-outline-danger btn-sm me-3">
+            <a href="{% url 'reviews:profile_search' %}" class="btn btn-success btn-sm me-3">
                 <i class="bi bi-person-plus"></i> Найти критика
             </a>
 
@@ -32,24 +46,18 @@
 
             {% with request.resolver_match.view_name as view_name %}
             <ul class="nav nav-pills">
-                <li class="nav-item">
-                    <a class="nav-link text-white {% if view_name == 'about:author' %}active{% endif %}" 
-                       href="{% url 'about:author' %}">Об авторе</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white {% if view_name == 'about:tech' %}active{% endif %}" 
-                       href="{% url 'about:tech' %}">Технологии</a>
-                </li>
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link text-white {% if view_name == 'reviews:review_create' %}active{% endif %}" 
-                           href="{% url 'reviews:review_create' %}">Новая рецензия</a>
+                        <a class="nav-link text-white" href="{% url 'reviews:review_create' %}">Новая рецензия</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="{% url 'users:logout' %}">Выйти</a>
+                        <a class="nav-link text-white" href="{% url 'reviews:profile' user.username %}">Мои рецензии</a>
                     </li>
                     <li class="nav-item">
-                        <span class="nav-link text-danger">{{ user.username }}</span>
+                        <a class="nav-link text-danger" href="{% url 'users:logout' %}">Выйти</a>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link text-white-50">{{ user.username }}</span>
                     </li>
                 {% else %}
                     <li class="nav-item">

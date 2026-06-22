@@ -26,6 +26,10 @@ class ReviewForm(forms.ModelForm):
             'rating': forms.Select(attrs={'class': 'form-select'}),
             'trailer_url': forms.URLInput(attrs={'class': 'form-control'}),
             'genre': forms.Select(attrs={'class': 'form-select'}),
+            'image': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*'
+            }),
         }
         labels = {
             'movie_title': 'Название фильма',
