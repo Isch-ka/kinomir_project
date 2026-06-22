@@ -1,34 +1,37 @@
 {% load static %}
 <nav class="navbar navbar-dark" style="background-color: #0a0a0a;">
-    <div class="container">
-        <div class="d-flex align-items-center">
-            <a class="navbar-brand" href="{% url 'reviews:index' %}">
-                <i class="bi bi-camera-reels-fill fs-3 me-2" style="color: #e50914;"></i>
-                <span style="color: #e50914;">КиноМир</span>
-            </a>
-            
-            {% if request.resolver_match.view_name != 'reviews:index' %}
-                <a href="{% url 'reviews:index' %}" class="btn btn-outline-light btn-sm ms-2">
-                    <i class="bi bi-house-door"></i> На главную
-                </a>
-            {% endif %}
+    <div class="container d-flex align-items-center" style="gap: 10px;">
+        <!-- ЛЕВАЯ ЧАСТЬ (фиксированная) -->
+        <div class="d-flex align-items-center" style="flex-shrink: 0;">
+    <a class="navbar-brand d-flex align-items-center" href="{% url 'reviews:index' %}">
+        <i class="bi bi-camera-reels-fill fs-3 me-2" style="color: #e50914;"></i>
+        <span style="color: #e50914; line-height: 1;">КиноМир</span>
+    </a>
+    
+    {% if request.resolver_match.view_name != 'reviews:index' %}
+        <a href="{% url 'reviews:index' %}" class="btn btn-outline-light btn-sm ms-2" style="align-self: center;">
+            <i class="bi bi-house-door"></i> На главную
+        </a>
+    {% endif %}
 
-            {% with request.resolver_match.view_name as view_name %}
-            <ul class="nav nav-pills ms-3">
-                <li class="nav-item">
-                    <a class="nav-link text-white {% if view_name == 'about:author' %}active{% endif %}" 
-                       href="{% url 'about:author' %}">КиноАвтор</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white {% if view_name == 'about:tech' %}active{% endif %}" 
-                       href="{% url 'about:tech' %}">КиноТех</a>
-                </li>
-            </ul>
-            {% endwith %}
-        </div>
+    {% with request.resolver_match.view_name as view_name %}
+    <ul class="nav nav-pills ms-3" style="align-items: center;">
+        <li class="nav-item">
+            <a class="nav-link text-white {% if view_name == 'about:author' %}active{% endif %}" 
+               href="{% url 'about:author' %}">КиноАвтор</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-white {% if view_name == 'about:tech' %}active{% endif %}" 
+               href="{% url 'about:tech' %}">КиноТех</a>
+        </li>
+    </ul>
+    {% endwith %}
+</div>
 
-        <div class="d-flex align-items-center">
-            <form method="get" action="{% url 'reviews:genres_list' %}" class="d-flex me-2">
+        <!-- ПРАВАЯ ЧАСТЬ (растягивается) -->
+        <div class="d-flex align-items-center justify-content-end" style="flex: 1; gap: 8px; flex-wrap: wrap;">
+            <!-- Поиск жанров -->
+            <form method="get" action="{% url 'reviews:genres_list' %}" class="d-flex">
                 <input type="text" name="q" class="form-control form-control-sm" 
                        placeholder="Поиск жанров..." style="width: 130px;">
                 <button type="submit" class="btn btn-danger btn-sm ms-1">
@@ -36,13 +39,13 @@
                 </button>
             </form>
 
-            <div class="vr mx-2 bg-secondary"></div>
+            <div class="vr mx-1 bg-secondary"></div>
 
-            <a href="{% url 'reviews:profile_search' %}" class="btn btn-success btn-sm me-3">
+            <a href="{% url 'reviews:profile_search' %}" class="btn btn-success btn-sm">
                 <i class="bi bi-person-plus"></i> Найти критика
             </a>
 
-            <div class="vr mx-2 bg-secondary"></div>
+            <div class="vr mx-1 bg-secondary"></div>
 
             {% with request.resolver_match.view_name as view_name %}
             <ul class="nav nav-pills">
